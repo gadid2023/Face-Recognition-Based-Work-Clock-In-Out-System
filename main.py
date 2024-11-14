@@ -24,7 +24,11 @@ class App:
         self.capture_label.place(x=100, y=100, width=900, height=600)  # Adjust position as needed
 
         # Add capture frame from the webcam
+        self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')  # Load the pre-trained face detector
+    
         self.add_capture_frame(self.capture_label)
+
+                  
 
 
 
@@ -63,11 +67,18 @@ class App:
                 return
         
             self.most_recent_capture_arr = frame
-            img_rgb = cv2.cvtColor(self.most_recent_capture_arr, cv2.COLOR_BGR2RGB)
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
+            # Detect faces in the frame
+            faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+            # Draw a red rectangle around each detected face
+            for (x, y, w, h) in faces:
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)  # Red color with thickness 2
+
+            img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             self.most_recent_capture_pil = Image.fromarray(img_rgb)
             imgtk = ImageTk.PhotoImage(image=self.most_recent_capture_pil)
-
             self._label.imgtk = imgtk
             self._label.configure(image=imgtk)
 
